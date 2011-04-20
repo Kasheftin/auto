@@ -67,6 +67,7 @@ abstract class parser
 
 	protected function offerExists($rw)
 	{
+		$rw["sysname"] = $this->opts["sysname"];
 		return (DB::f1("select id from offers where sysname=:sysname and source_id=:source_id",array("sysname"=>$rw["sysname"],"source_id"=>$rw["source_id"]))?1:0);
 	}
 
@@ -99,7 +100,7 @@ abstract class parser
 				$rw[$field] = $tmp_rw[$field];
 				
 		DB::q("update offers set " . $q . " where sysname=:sysname and source_id=:source_id",$rw);
-		
+
 		return 1;
 	}
 }
