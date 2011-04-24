@@ -23,7 +23,7 @@ abstract class parser
 		$this->loadStateFromFile();
 
 		$this->req = new Req();
-		$this->req -> set(array("method"=>"GET","host"=>$this->opts["host"],"auto_encode_to"=>"utf-8"));
+		$this->req -> set(array("host"=>$this->opts["host"],"auto_encode_to"=>"utf-8"));
 		if ($this->opts["sleep_between_requests"]) $this->req->set("delay",$this->opts["sleep_between_requests"]);
 		if ($this->opts["max_repeat"]) $this->req->set("auto_redirects_limit",$this->opts["max_repeat"]);
  
@@ -33,11 +33,13 @@ abstract class parser
 			-> setOpt("afterSaveFunc",create_function('$str','$str = preg_replace("/&nbsp;/"," ",$str); $str = preg_replace("/\s+/"," ",$str); return trim($str);'))
 			-> setOpt("smartSaving",0);
 		$this->pp = $pp;
-		
+
 		if ($this->opts["mode"] == "offer")
 		{
 			if ($this->opts["offer_id"])
 				$rws = DB::f("select id,source_id,source_url from offers where id=:id and sysname=:sysname limit 0,1",array("id"=>$this->opts["offer_id"],"sysname"=>$this->opts["sysname"]));
+			elseif ($this->opts["source_id"])
+				$rws = DB::f("select id,source_id,source_url from offers where source_id=:source_id and sysname=:sysname limit 0,1",array("source_id"=>$this->opts["source_id"],"sysname"=>$this->opts["sysname"]));
 			else
 				$rws = DB::f("select id,source_id,source_url from offers where status=0 and sysname=:sysname",array("sysname"=>$this->opts["sysname"]));
 
@@ -90,17 +92,30 @@ abstract class parser
 						$obj["processed"] = 1;
 						$this->updateState($obj);
 						$this->saveStateToFile();
+						$repeat_i = 0;
+
+						if ($this->opts["period"] && $ar["min_dt"] && time() > $ar["min_dt"] + $this->opts["period"])
+						{
+							echo "Min publish date reached: " . date("Y-m-d",$ar["min_dt"]) . "\n";
+							$this->clearStateByBaseUrl($obj);
+						}
 					}
-					else echo "Parsing offers error occurs: " . $ar["error"] . "\n";
-					$repeat_i = 0;
+					else
+					{
+						echo "Error parsing page: " . $ar["error"] . "\n";
+						$repeat_i++;
+						if ($repeat_i > $this->opts["max_repeat"]) throw new Exception("Max repeat reached while parsing");
+					}
 				}
 				else
 				{
 					echo "Error loading page url=" . $url . ", try " . $try_i . "\n";
 					$repeat_i++;
-					if ($repeat_i > $this->opts["max_repeat"]) throw new Exception("Max repeat reached\n");
+					if ($repeat_i > $this->opts["max_repeat"]) throw new Exception("Max repeat reached while loading");
 				}
 			}
+
+			$this->resetStateFile();
 		}
 		else throw new Exception("Mode " . $this->opts["mode"] . " is not supported");
 
@@ -138,6 +153,10 @@ abstract class parser
 		echo "Loading url " . $obj["url"] . "\n";
 		ob_flush();
 		flush();
+
+		if ($obj["cookies"])
+			$this->req->set("cookies",$obj["cookies"]);
+
 		$this->req	-> set($this->getHostAndUrl($obj["url"]))
 				-> req()
 				-> saveContent($str);
@@ -222,6 +241,15 @@ abstract class parser
 		return null;
 	}
 
+	protected function clearStateByBaseUrl($obj)
+	{
+		$urls = $this->state["urls"];
+		foreach($urls as $url => $tobj)
+			if ($obj["base_url"] == $tobj["base_url"])
+				unset($this->state["urls"][$url]);
+		return $this;
+	}			
+
 	protected function saveOffers($rws)
 	{
 		$cnt_added = $cnt_updated = 0;
@@ -273,7 +301,7 @@ abstract class parser
 		$rw["dt_last_found"] = time();
 		$rw["sysname"] = $this->opts["sysname"];
 
-		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone";
+		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone";
 		if ($this->opts["save_raw_html"]) $update_fields .= ",raw_html";
 		$clear_fields = $update_fields . ",sysname,source_id";
 
@@ -298,6 +326,28 @@ abstract class parser
 		DB::q("update offers set " . $q . " where sysname=:sysname and source_id=:source_id",$rw);
 
 		return 1;
+	}
+
+	protected function parseDate($str)
+	{
+		$ar = explode(" ",trim($str));
+		$day = $ar[0];
+		$month_name = $ar[1];
+
+		$months = array("январ","феврал","март","апрел","ма(й|я)","июн","июл","август","сентябр","октябр","ноябр","декабр");
+		foreach($months as $i => $pattern)
+			if (preg_match("/" . $pattern . "/",$month_name))
+			{
+				$month = $i + 1;
+				break;
+			}
+		
+		$year = date("Y");
+
+		if ($month > date("m"))
+			$year--;
+
+		return mktime(0,0,0,$month,$day,$year);
 	}
 }
 

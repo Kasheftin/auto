@@ -28,7 +28,7 @@ class ParserAuto extends Parser
 	{
 		$data = $raw_data = array();
 
-		if (preg_match("/<title[^<>]*>Ошибка 404/",$str))
+		if (preg_match("/<title[^<>]*>Ошибка 404/i",$str))
 			return array("data"=>array("status"=>2),"success"=>"Offer not found");
 
 		$data["raw_html"] = $str;

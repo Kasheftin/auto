@@ -27,9 +27,10 @@ try
 
 	if ($_REQUEST && is_array($_REQUEST))
 		foreach($_REQUEST as $field => $value)
-			if (in_array($field,array("sysname","mode","offer_id","reset")))
+			if (in_array($field,array("sysname","mode","offer_id","source_id","reset","state_p1")))
 				$opts[$field] = $value;
 
+	$opts["source_id"] = (int)$opts["source_id"];
 	$opts["offer_id"] = (int)$opts["offer_id"];
 	$opts["state_file"] = dirname(__FILE__) . "/tmp/" . $opts["sysname"] . "_" . $opts["mode"];
 
