@@ -177,7 +177,7 @@ class ParserAutochel extends Parser
 					-> save($pages)
 				-> e()
 				-> DOMfind("/<table[^<>]*class\s*=\s*[\"']?adv\_list[\"']?[^<>]*>/","/<\/table[^<>]*>/","/<table[^<>]*>/")
-				-> DOMfindAll("/<tr[^<>]*id\s*=\s*[\"']?row\d+[^<>]*>/","/<\/tr[^<>]*>/")
+				-> DOMfindAll("/<tr[^<>]*id\s*=\s*[\"']?row\d+[^<>]*>/","/<\/tr[^<>]*>/","/<tr[^<>]*>/")
 				-> each()
 					-> split("/<\/td>/")
 					-> b()
@@ -254,9 +254,6 @@ class ParserAutochel extends Parser
 					-> e()
 				-> endEach();
 
-		if ($data["photo_url"])
-			$data["photo_exists"] = 1;
-
 		$tmp_data = $data;
 		$data = array();
 
@@ -269,6 +266,9 @@ class ParserAutochel extends Parser
 
 			if (preg_match("/^\d/",$data[$i]["date_raw"]))
 				$data[$i]["dt_published"] = $this->parseDate($data[$i]["date_raw"]);
+
+			if ($data[$i]["photo_url"])
+				$data[$i]["photo_exists"] = 1;
 		}
 
 		$urls = array();
