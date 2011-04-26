@@ -36,7 +36,7 @@ try
 
 	if (!$opts["sysname"]) throw new Exception("Sysname not specified");
 	if (!$opts["mode"]) throw new Exception("Mode not specified");
- 	if (!in_array($opts["sysname"],array("auto","autochel","drom","e1"))) throw new Exception("Unsupported sysname " . $opts["sysname"]);
+ 	if (!in_array($opts["sysname"],array("auto","autochel","drom","e1","irr"))) throw new Exception("Unsupported sysname " . $opts["sysname"]);
 	if (!in_array($opts["mode"],array("pages","offer"))) throw new Exception("Unsupported mode " . $opts["mode"]);
 
 	require_once(dirname(__FILE__) . "/classes/parser_" . $opts["sysname"] . ".class.php");
