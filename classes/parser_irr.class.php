@@ -6,7 +6,7 @@ class ParserIrr extends Parser
 		"host" => "irr.ru",
 		"period" => 432000,
 		"regions" => array("perm","ufa","chelyabinsk","tyumen","ekaterinburg"),
-		"max_repeat" => 5,
+		"max_repeat" => 15,
 	);
 
 	public function initializeState()
@@ -81,6 +81,18 @@ class ParserIrr extends Parser
 			if (!$p_n || !$p_v) continue;
 			$data["info"][$p_n] = $p_v;
 		}
+
+		if ($data["phone"])
+		{
+			$phone_raw = $data["phone"];
+			$ar = explode(",",$phone_raw,2);
+			$phone_raw = trim($ar[0]);
+			$phone_raw = preg_replace("/\+7/","",$phone_raw);
+			$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
+			$phone_raw = preg_replace("/^8/","",$phone_raw);
+			$data["phone"] = $phone_raw;
+		}
+
 
 		if ($data["info"]["Тип двигателя"])
 			$data["engine_type"] = $data["info"]["Тип двигателя"];

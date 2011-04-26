@@ -124,10 +124,11 @@ class ParserAutochel extends Parser
 		$phone_raw = $data["contacts"]["Телефон"];
 		$ar = explode(",",$phone_raw,2);
 		$phone_raw = trim($ar[0]);
-		$phone_raw = preg_replace("/+7/","",$phone_raw);
+		$phone_raw = preg_replace("/\+7/","",$phone_raw);
 		$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
 		$phone_raw = preg_replace("/^8/","",$phone_raw);
 		$data["phone"] = $phone_raw;
+
 
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
 	}
