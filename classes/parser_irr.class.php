@@ -101,6 +101,9 @@ class ParserIrr extends Parser
 		if ($data["info"]["Тип кузова"])
 			$data["body_type"] = $data["info"]["Тип кузова"];
 
+		if ($data["info"]["Состояние"] == "плохое" || $data["info"]["состояние"] == "на запчасти")
+			$data["crashed"] = 1;
+
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
 	}
 

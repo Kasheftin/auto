@@ -240,6 +240,12 @@ class ParserE1 extends Parser
 			else
 				$data[$i]["price_rub"] = $data[$i]["price"];
 
+			if (preg_match("/аварийный или битый/",$data[$i]["body_type"]))
+			{
+				$data[$i]["crashed"] = 1;
+				$data[$i]["body_type"] = trim(preg_replace("/аварийный или битый/","",$data[$i]["body_type"]));
+			}
+
 			unset($data[$i]["price"]);
 			unset($data[$i]["price_type_rub"]);
 			unset($data[$i]["price_type_eur"]);

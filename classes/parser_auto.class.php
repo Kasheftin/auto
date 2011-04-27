@@ -255,6 +255,11 @@ class ParserAuto extends Parser
 			foreach($tmp_data as $field_name => $rws)
 				$data[$i][$field_name] = $rws[$i][0];
 			$data[$i]["mark"] = $this->findMark($data[$i]["markmodel"]);
+			if (preg_match("/требует ремонта/",$data[$i]["body_type"]))
+			{
+				$data[$i]["crashed"] = 1;
+				$data[$i]["body_type"] = trim(preg_replace("/требует ремонта/","",$data[$i]["body_type"]));
+			}
 		}
 
 		$urls = array();

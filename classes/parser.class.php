@@ -301,7 +301,7 @@ abstract class parser
 		$rw["dt_last_found"] = time();
 		$rw["sysname"] = $this->opts["sysname"];
 
-		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone";
+		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone,crashed";
 		if ($this->opts["save_raw_html"]) $update_fields .= ",raw_html";
 		$clear_fields = $update_fields . ",sysname,source_id";
 
