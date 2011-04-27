@@ -69,8 +69,8 @@ class ParserIrr extends Parser
 						-> save($data["contact_person"],null,1)
 					-> e()
 					-> b()
-						-> find("/<li[^<>]*class\s*=\s*[\"']?ico-(m)?phone[^<>]*>/","/<\/li[^<>]*>/")
-						-> save($data["phone"],null,1)
+						-> findAll("/<li[^<>]*class\s*=\s*[\"']?ico-(m)?phone[^<>]*>/","/<\/li[^<>]*>/")
+						-> save($data["phones"])
 					-> e()
 				-> e();
 
@@ -82,16 +82,10 @@ class ParserIrr extends Parser
 			$data["info"][$p_n] = $p_v;
 		}
 
-		if ($data["phone"])
-		{
-			$phone_raw = $data["phone"];
-			$ar = explode(",",$phone_raw,2);
-			$phone_raw = trim($ar[0]);
-			$phone_raw = preg_replace("/\+7/","",$phone_raw);
-			$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
-			$phone_raw = preg_replace("/^8/","",$phone_raw);
-			$data["phone"] = $phone_raw;
-		}
+		if ($data["phones"][0])
+			$data["phone"] = $this->preparePhone($data["phones"][0]);
+		if ($data["phones"][1])
+			$data["phone2"] = $this->preparePhone($data["phones"][1]);
 
 
 		if ($data["info"]["Тип двигателя"])
@@ -100,6 +94,8 @@ class ParserIrr extends Parser
 			$data["drive"] = $data["info"]["Привод"];
 		if ($data["info"]["Тип кузова"])
 			$data["body_type"] = $data["info"]["Тип кузова"];
+		if ($data["info"]["Руль"] == "правый")
+			$data["right_steering_wheel"] = 1;
 
 		if ($data["info"]["Состояние"] == "плохое" || $data["info"]["состояние"] == "на запчасти")
 			$data["crashed"] = 1;

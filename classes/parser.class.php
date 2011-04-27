@@ -301,7 +301,7 @@ abstract class parser
 		$rw["dt_last_found"] = time();
 		$rw["sysname"] = $this->opts["sysname"];
 
-		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone,crashed";
+		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone,phone2,crashed";
 		if ($this->opts["save_raw_html"]) $update_fields .= ",raw_html";
 		$clear_fields = $update_fields . ",sysname,source_id";
 
@@ -348,6 +348,17 @@ abstract class parser
 			$year--;
 
 		return mktime(0,0,0,$month,$day,$year);
+	}
+	
+	protected function preparePhone($str)
+	{
+		$phone_raw = $str;
+		$ar = explode(",",$phone_raw,2);
+		$phone_raw = trim($ar[0]);
+		$phone_raw = preg_replace("/\+7/","",$phone_raw);
+		$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
+		$phone_raw = preg_replace("/^8/","",$phone_raw);
+		return $phone_raw;
 	}
 }
 

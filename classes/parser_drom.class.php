@@ -74,6 +74,9 @@ class ParserDrom extends Parser
 			$data["info"][$p_n] = $p_v;
 		}
 
+		if ($data["info"]["Руль"] == "правый")
+			$data["right_steering_wheel"] = 1;
+
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
 	}
 

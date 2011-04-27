@@ -123,11 +123,8 @@ class ParserAutochel extends Parser
 
 		$phone_raw = $data["contacts"]["Телефон"];
 		$ar = explode(",",$phone_raw,2);
-		$phone_raw = trim($ar[0]);
-		$phone_raw = preg_replace("/\+7/","",$phone_raw);
-		$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
-		$phone_raw = preg_replace("/^8/","",$phone_raw);
-		$data["phone"] = $phone_raw;
+		$data["phone"] = $this->preparePhone($ar[0]);
+		$data["phone2"] = $this->preparePhone($ar[1]);
 
 
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
@@ -234,7 +231,7 @@ class ParserAutochel extends Parser
 					-> e()
 					-> b()
 						-> selBI(6)
-						-> find("/rudder\_right/")
+						-> find("/(rudder\_right)/")
 						-> replace("/rudder\_right/",1)
 						-> save($data["right_steering_wheel"])
 					-> e()
