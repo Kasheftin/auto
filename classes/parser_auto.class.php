@@ -108,8 +108,12 @@ class ParserAuto extends Parser
 		if (!preg_match("/не указан/",$data["info"]["VIN"]))
 			$data["vin"] = $data["info"]["VIN"];
 		$data["contact_person"] = $data["contacts"]["Контактное лицо"];
-		if (preg_match("/\(\d+\)[\d\s-]+/",$data["contacts"]["Телефон"],$m))
-			$data["phone"] = preg_replace("/[^\d]/","",$m[0]);
+
+		preg_match_all("/\(\d+\)[\d\s-]+/",$data["contacts"]["Телефон"],$m);
+		if ($m[0][0])
+			$data["phone"] = preg_replace("/[^\d]/","",$m[0][0]);
+		if ($m[0][1])
+			$data["phone2"] = preg_replace("/[^\d]/","",$m[0][1]);
 
 		unset($data["contacts"]["E-mail"]);
 
