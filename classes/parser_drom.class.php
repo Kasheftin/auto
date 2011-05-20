@@ -4,12 +4,15 @@ class ParserDrom extends Parser
 {
 	protected $opts = array(
 		"host" => "drom.ru",
+		"marks_host" => "auto.drom.ru",
 		"period" => 432000,
 		"regions" => array("perm","ufa","chelyabinsk","tyumen","ekaterinburg"),
 	);
 
 	public function initializeState()
 	{
+		$this->state["marks"] = $this->loadMarks();
+
 		foreach($this->opts["regions"] as $region)
 		{
 			$url = "http://" . $region . "." . $this->opts["host"] . "/auto/?s_currency=1&inomarka=1&go_search=2";
@@ -40,7 +43,8 @@ class ParserDrom extends Parser
 					-> find("/<div[^<>]*class\s*=\s*[\"']?path[\"']?[^<>]*>/","/<\/div[^<>]*>/")
 					-> split("/Продажа автомобилей/",2,1)
 					-> find("/<a[^<>]*>/","/<\/a[^<>]*>/")
-					-> save($data["mark"],null,1)
+// Move mark value to the pages-parser
+//					-> save($data["mark"],null,1)
 				-> e()
 				-> find("/<div[^<>]*class\s*=\s*[\"']?price[\"']?[^<>]*>/","/<p[^<>]*id\s*=\s*[\"']?ajax\_error\_container[^<>]*>/")
 				-> findAll("/<p[^<>]*>/","/<\/p[^<>]*>/")
@@ -75,6 +79,39 @@ class ParserDrom extends Parser
 		}
 
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
+	}
+
+	protected function loadMarks()
+	{
+		echo __METHOD__ . ": Start loading root url\n";
+		$this->req	-> set(array("host"=>$this->opts["marks_host"],"url"=>"/"))
+				-> req()
+				-> saveContent($str)
+				-> set("host",$this->opts["host"]);
+
+		$this->pp	-> reset()
+				-> set($str)
+				-> DOMfind("/<div[^<>]*class\s*=\s*[\"']?selectCars[^<>]*>/","/<\/div[^<>]*>/","/<div[^<>]*>/")
+				-> findAll("/<a[^<>]*>/","/<\/a[^<>]*>/")
+				-> rm("/^$/")
+				-> save($data);
+		return $data;
+	}
+
+	protected function findMark($str)
+	{
+		$str = trim($str);
+		$ar = explode(" ",$str);
+		for ($i = 0; $i < count($ar); $i++)
+		{
+			$substr = "";
+			for ($j = 0; $j <= $i; $j++)
+				$substr .= $ar[$j];
+			foreach($this->state["marks"] as $mark)
+				if ($substr == $mark)
+					return $mark;
+		}
+		return null;
 	}
 
 	public function parseOffers($obj,$str)
@@ -181,6 +218,9 @@ class ParserDrom extends Parser
 				$data[$i]["dt_published"] = mktime(0,0,0,$m[2],$m[1],date("Y"));
 				if ($min_dt > $data[$i]["dt_published"]) $min_dt = $data[$i]["dt_published"];
 			}
+
+			if ($data[$i]["markmodel"])
+				$data[$i]["mark"] = $this->findMark($data[$i]["markmodel"]);
 
 			if ($data[$i]["photo_url"])
 				$data[$i]["photo_exists"] = 1;
