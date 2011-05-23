@@ -18,12 +18,13 @@ try
 	foreach($rws as $rw)
 		$patterns[$rw["sysname"]][$rw["input_field"]][] = $rw;
 
-	$rws = DB::f("select * from offers where patterns_status=0 and status=1");
+	$rws = DB::q("select * from offers where patterns_status=0 and status=1");
 	foreach($rws as $rw)
 	{
 		try
 		{
 			$rw_update = array("patterns_status"=>1);
+			if (!$patterns[$rw["sysname"]]) continue;
 			foreach($patterns[$rw["sysname"]] as $input_field => $p_rws)
 			{
 				$r_val = mb_strtolower($rw[$input_field]);
