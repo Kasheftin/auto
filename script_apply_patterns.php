@@ -16,34 +16,51 @@ try
 	$patterns = array();
 	$rws = DB::f("select * from patterns");
 	foreach($rws as $rw)
-		$patterns[$rw["sysname"]][$rw["input_field"]][mb_strtolower($rw["input_value"])] = $rw["output_value"];
+		$patterns[$rw["sysname"]][$rw["input_field"]][] = $rw;
 
-	$rws =DB::f("select * from offers where patterns_status=0");
+	$rws = DB::f("select * from offers where patterns_status=0 and status=1");
 	foreach($rws as $rw)
 	{
-		$rw_update = array("patterns_status"=>1);
-		foreach($patterns[$rw["sysname"]] as $input_field => $rws)
+		try
 		{
-			if ($rw[$input_field])
+			$rw_update = array("patterns_status"=>1);
+			foreach($patterns[$rw["sysname"]] as $input_field => $p_rws)
 			{
-				$output_value = $rws[mb_strtolower($rw[$input_field])];
-				if (!$output_value)
+				$r_val = mb_strtolower($rw[$input_field]);
+
+				if (!$r_val)
+					throw new Exception("required field " . $input_field . " is empty");
+
+				$output_value = 0;
+				foreach($p_rws as $p_rw)
 				{
-					echo $rw["id"] . " - pattern not found: sysname=" . $rw["sysname"] . " input_field=" . $input_field . " value=" . $rw[$input_field] . "\n";
-					continue 2;
+					$p_val = mb_strtolower($p_rw["input_value"]);
+					if ((($p_val == $r_val) && ($p_rw["type"] == "equal")) || (preg_match("/" . $p_val . "/",$r_val) && $p_rw["type"] == "match"))
+					{
+						$output_value = $p_rw["output_value"];
+						break;
+					}
 				}
+
+				if (!$output_value)
+					throw new Exception("pattern not found for $input_field, value=" . $r_val);
+
 				$rw_update[$input_field . "_id"] = $output_value;
 			}
+
+			$update_str = "";
+			foreach($rw_update as $field => $value)
+				$update_str .= ($update_str?",":"") . $field . "=:" . $field;
+
+			$rw_update["id"] = $rw["id"];
+
+			DB::q("update offers set " . $update_str . " where id=:id",$rw_update);
+			echo $rw["id"] . " - updated\n";
 		}
-
-		$update_str = "";
-		foreach($rw_update as $field => $value)
-			$update_str .= ($update_str?",":"") . $field . "=:" . $field;
-
-		$rw_update["id"] = $rw["id"];
-
-		DB::q("update offers set " . $update_str . " where id=:id",$rw_update);
-		echo $rw["id"] . " updated\n";
+		catch (Exception $e)
+		{
+			echo "Error: #" . $rw["id"] . " - " . $e->getMessage() . "\n";
+		}
 	}
 }
 catch (Exception $e)
