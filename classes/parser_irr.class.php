@@ -13,7 +13,7 @@ class ParserIrr extends Parser
 	{
 		foreach($this->opts["regions"] as $region)
 		{
-			$url = "http://" . $region . "." . $this->opts["host"] . "/cars/passenger/used/sort/date_create:desc/search/";
+			$url = "http://" . $region . "." . $this->opts["host"] . "/cars/passenger/used/search/sort/date_create:desc/";
 			$this->addToState(array("url"=>$url,"processed"=>0,"base_url"=>$url,"region"=>$region));
 		}
 
@@ -137,10 +137,12 @@ class ParserIrr extends Parser
 					-> b()
 						-> selBI(4)
 						-> replace("/<[^<>]*>/","")
+/*
 						-> b()
 							-> find("/^([^\,]+)/")
 							-> save($data["markmodel"])
 						-> e()
+*/
 						-> b()
 							-> find("/([\d\.,]+\s*куб)/")
 							-> save($data["engine"])
@@ -157,6 +159,10 @@ class ParserIrr extends Parser
 					-> b()
 						-> selBI(5)
 						-> save($data["mark"])
+					-> e()
+					-> b()
+						-> selBI(6)
+						-> save($data["model"])
 					-> e()
 					-> b()
 						-> selBI(7)
@@ -182,6 +188,8 @@ class ParserIrr extends Parser
 
 			if ($data[$i]["photo_url"])
 				$data[$i]["photo_exists"] = 1;
+
+			$data[$i]["markmodel"] = $data[$i]["mark"] . " " . $data[$i]["model"];
 		}
 
 		$urls = array();
