@@ -81,6 +81,8 @@ class ParserDrom extends Parser
 		if ($data["info"]["Руль"] == "правый")
 			$data["right_steering_wheel"] = 1;
 
+		$data["status"] = 1;
+
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
 	}
 
@@ -231,6 +233,8 @@ class ParserDrom extends Parser
 
 			if ($data[$i]["photo_url"])
 				$data[$i]["photo_exists"] = 1;
+
+			$data[$i]["print_source_url"] = $data[$i]["source_url"];
 		}
 
 		$urls = array();

@@ -278,6 +278,10 @@ class ParserAutochel extends Parser
 
 			if ($data[$i]["photo_url"])
 				$data[$i]["photo_exists"] = 1;
+
+			$data[$i]["print_source_url"] = $data[$i]["source_url"];
+			if (!preg_match("/^http:\/\//",$data[$i]["print_source_url"]))
+				$data[$i]["print_source_url"] = "http://" . $this->opts["host"] . $data[$i]["print_source_url"];
 		}
 
 		$urls = array();

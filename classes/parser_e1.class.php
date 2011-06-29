@@ -6,6 +6,7 @@ class ParserE1 extends Parser
 		"host" => "www.e1.ru",
 		"pages_url" => "/auto/sale/",
 		"period" => 432000,
+		"default_page_encoding" => "windows-1251",
 	);
 
 	public function initializeState()
@@ -110,8 +111,24 @@ class ParserE1 extends Parser
 			$data["without_customs"] = 1;
 		else
 			$data["without_customs"] = 0;
+		
+		if ($data["info"]["Привод"])
+			$data["drive"] = $data["info"]["Привод"];
+		if ($data["info"]["Тип кузова"])
+			$data["body_type"] = $data["info"]["Тип кузова"];
+		if ($data["info"]["Тип двигателя"])
+			$data["engine_type"] = $data["info"]["Тип двигателя"];
+		if ($data["info"]["Объем двигателя"])
+			$data["engine"] = $data["info"]["Объем двигателя"];
+		if ($data["info"]["Цвет"])
+			$data["color"] = $data["info"]["Цвет"];
+		if ($data["info"]["Пробег"])
+			$data["run"] = $data["info"]["Пробег"];
+		if ($data["info"]["КПП"])
+			$data["transmission"] = mb_substr($data["info"]["КПП"],0,1);
+		if ($data["info"]["Город"])
+			$data["city"] = $data["info"]["Город"];
 
-		$data["drive"] = $data["info"]["Привод"];
 		if (!preg_match("/не указан/",$data["info"]["VIN"]))
 			$data["vin"] = $data["info"]["VIN"];
 		$data["contact_person"] = $data["contacts"]["Продавец"];
@@ -258,6 +275,8 @@ class ParserE1 extends Parser
 			unset($data[$i]["price_type_rub"]);
 			unset($data[$i]["price_type_eur"]);
 			unset($data[$i]["price_type_usd"]);
+
+			$data[$i]["print_source_url"] = "http://" . $this->opts["host"] . preg_replace("/\/print\//","/",$data[$i]["source_url"]);
 		}
 
 		$urls = array();

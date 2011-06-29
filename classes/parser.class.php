@@ -26,7 +26,8 @@ abstract class parser
 		$this->req -> set(array("host"=>$this->opts["host"],"auto_encode_to"=>"utf-8"));
 		if ($this->opts["sleep_between_requests"]) $this->req->set("delay",$this->opts["sleep_between_requests"]);
 		if ($this->opts["max_repeat"]) $this->req->set("auto_redirects_limit",$this->opts["max_repeat"]);
- 
+		if ($this->opts["default_page_encoding"]) $this->req->set("default_page_encoding",$this->opts["default_page_encoding"]);
+  
 		$pp = new PageParser();
 		$pp	-> setOpt("i",true)
 			-> setOpt("beforeSaveFunc","strip_tags")
@@ -37,11 +38,11 @@ abstract class parser
 		if ($this->opts["mode"] == "offer")
 		{
 			if ($this->opts["offer_id"])
-				$rws = DB::f("select id,source_id,source_url from offers where id=:id and sysname=:sysname limit 0,1",array("id"=>$this->opts["offer_id"],"sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url from source_offers where id=:id and sysname=:sysname limit 0,1",array("id"=>$this->opts["offer_id"],"sysname"=>$this->opts["sysname"]));
 			elseif ($this->opts["source_id"])
-				$rws = DB::f("select id,source_id,source_url from offers where source_id=:source_id and sysname=:sysname limit 0,1",array("source_id"=>$this->opts["source_id"],"sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url from source_offers where source_id=:source_id and sysname=:sysname limit 0,1",array("source_id"=>$this->opts["source_id"],"sysname"=>$this->opts["sysname"]));
 			else
-				$rws = DB::f("select id,source_id,source_url from offers where status=0 and sysname=:sysname",array("sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url from source_offers where status=0 and sysname=:sysname",array("sysname"=>$this->opts["sysname"]));
 
 			foreach($rws as $rw)
 			{
@@ -54,7 +55,7 @@ abstract class parser
 					{
 						unset($ar["data"]["raw_html"]);
 						$ar["data"]["source_id"] = $rw["source_id"];
-						if (!$ar["data"]["status"]) $ar["data"]["status"] = 1;
+						if (!$ar["data"]["status"] && $ar["data"]["phone"]) $ar["data"]["status"] = 1;
 						$ar = $this->saveOffer($ar["data"]);
 						if ($ar["success"])
 						{
@@ -288,12 +289,12 @@ abstract class parser
 
 	protected function offerExists($rw)
 	{
-		return (DB::f1("select id from offers where sysname=:sysname and source_id=:source_id",array("sysname"=>$this->opts["sysname"],"source_id"=>$rw["source_id"]))?1:0);
+		return (DB::f1("select id from source_offers where sysname=:sysname and source_id=:source_id",array("sysname"=>$this->opts["sysname"],"source_id"=>$rw["source_id"]))?1:0);
 	}
 
 	protected function addOffer($rw)
 	{
-		return DB::q("insert into offers(`sysname`,`source_id`,`dt_added`) values(:sysname,:source_id,:dt_added)",array("sysname"=>$this->opts["sysname"],"source_id"=>$rw["source_id"],"dt_added"=>time()));
+		return DB::q("insert into source_offers(`sysname`,`source_id`,`dt_added`) values(:sysname,:source_id,:dt_added)",array("sysname"=>$this->opts["sysname"],"source_id"=>$rw["source_id"],"dt_added"=>time()));
 	}
 
 	protected function updateOffer($rw)
@@ -301,7 +302,7 @@ abstract class parser
 		$rw["dt_last_found"] = time();
 		$rw["sysname"] = $this->opts["sysname"];
 
-		$update_fields = "source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone,phone2,crashed,transmission";
+		$update_fields = "source_url,print_source_url,dt_last_found,mark,markmodel,price_rub,price_usd,price_eur,production_year,engine,engine_type,right_steering_wheel,run,photo_exists,body_type,color,city,without_customs,available,details,details_where,package,info,contacts,photo_url,status,drive,vin,contact_person,phone,phone2,crashed,transmission";
 		if ($this->opts["save_raw_html"]) $update_fields .= ",raw_html";
 		$clear_fields = $update_fields . ",sysname,source_id";
 
@@ -323,7 +324,7 @@ abstract class parser
 					$rw[$field] = $tmp_rw[$field];
 			}
 
-		DB::q("update offers set " . $q . " where sysname=:sysname and source_id=:source_id",$rw);
+		DB::q("update source_offers set " . $q . " where sysname=:sysname and source_id=:source_id",$rw);
 
 		return 1;
 	}
@@ -353,7 +354,7 @@ abstract class parser
 	protected function preparePhone($str)
 	{
 		$phone_raw = $str;
-		$ar = explode(",",$phone_raw,2);
+		$ar = preg_split("/[,;]/",$phone_raw,2);
 		$phone_raw = trim($ar[0]);
 		$phone_raw = preg_replace("/\+7/","",$phone_raw);
 		$phone_raw = preg_replace("/[^\d]/","",$phone_raw);

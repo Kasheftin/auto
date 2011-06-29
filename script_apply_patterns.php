@@ -1,24 +1,15 @@
 <?php
 
-ini_set("memory_limit","64M");
-error_reporting(E_ERROR);
-set_time_limit(0);
-mb_internal_encoding("UTF-8");
-
-require_once(dirname(__FILE__) . "/classes/db/db.class.php");
-
-$CONFIG = require_once("config.php");
+include(dirname(__FILE__) . "/c_header.php");
 
 try
 {
-	DB::setConfig($CONFIG["db"]);
-
 	$patterns = array();
 	$rws = DB::f("select * from patterns");
 	foreach($rws as $rw)
 		$patterns[$rw["sysname"]][$rw["input_field"]][] = $rw;
 
-	$rws = DB::q("select * from offers where patterns_status=0 and status=1");
+	$rws = DB::q("select * from source_offers where patterns_status=0 and status=1");
 	foreach($rws as $rw)
 	{
 		try
@@ -30,7 +21,10 @@ try
 				$r_val = mb_strtolower($rw[$input_field]);
 
 				if (!$r_val)
-					throw new Exception("required field " . $input_field . " is empty");
+				{
+					echo "required field " . $input_field . " is empty\n";
+					continue;
+				}
 
 				$output_value = 0;
 				foreach($p_rws as $p_rw)
@@ -55,7 +49,7 @@ try
 
 			$rw_update["id"] = $rw["id"];
 
-			DB::q("update offers set " . $update_str . " where id=:id",$rw_update);
+			DB::q("update source_offers set " . $update_str . " where id=:id",$rw_update);
 			echo $rw["id"] . " - updated\n";
 		}
 		catch (Exception $e)

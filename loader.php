@@ -1,21 +1,9 @@
 <?php
 
-ini_set("memory_limit","64M");
-error_reporting(E_ERROR);
-set_time_limit(0);
-
-require_once(dirname(__FILE__) . "/classes/req/req.class.php");
-require_once(dirname(__FILE__) . "/classes/req/reqexception.class.php");
-require_once(dirname(__FILE__) . "/classes/pageparser/pageparser.class.php");
-require_once(dirname(__FILE__) . "/classes/db/db.class.php");
-require_once(dirname(__FILE__) . "/classes/parser.class.php");
-
-$CONFIG = require_once("config.php");
+include(dirname(__FILE__) . "/c_header.php");
 
 try
 {
-	DB::setConfig($CONFIG["db"]);
-
 	$opts = array();
 
 	if ($argv && is_array($argv))

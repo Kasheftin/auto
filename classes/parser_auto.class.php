@@ -272,6 +272,7 @@ class ParserAuto extends Parser
 				$data[$i]["crashed"] = 1;
 				$data[$i]["body_type"] = trim(preg_replace("/требует ремонта/","",$data[$i]["body_type"]));
 			}
+			$data[$i]["print_source_url"] = $data[$i]["source_url"];
 		}
 
 		$urls = array();

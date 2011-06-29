@@ -20,6 +20,10 @@ return array(
 				"errformat"	=> "html",
 			),
 		),
-		"default_connection_id" => "local",
+		"default_connection_id" => "production",
+	),
+	"debug" => array(
+		"mode" => "SHORT|IMPORTANT|MAJOR|SQL",
+		"realtime" => 1,
 	),
 );	
