@@ -24,6 +24,11 @@ class ParserAuto extends Parser
 		return $this;
 	}
 
+	public function initializeOfferState()
+	{
+		$this->state["marks"] = $this->loadMarks();
+	}
+
 	public function parseOffer($rw,$str)
 	{
 		$data = $raw_data = array();
@@ -117,6 +122,8 @@ class ParserAuto extends Parser
 
 		unset($data["contacts"]["E-mail"]);
 
+		$data["mark"] = $this->findMark($rw["markmodel"]);
+
 		return array("data"=>$data,"success"=>"Offer $rw[id] has been parsed");
 	}
 
@@ -147,7 +154,7 @@ class ParserAuto extends Parser
 		{
 			$substr = "";
 			for ($j = 0; $j <= $i; $j++)
-				$substr .= $ar[$j];
+				$substr .= ($substr?" ":"") . $ar[$j];
 			foreach($this->state["marks"] as $mark)
 				if ($substr == $mark)
 					return $mark;

@@ -4,23 +4,23 @@ return array(
 	"db" => array(
 		"connections" => array(
 			"local" => array(
-				"sys"		=> "mysql:host=localhost;dbname=auto",
-				"user"		=> "auto",
-				"pass"		=> "cM8JhMEWLcS39Xyn",
+				"sys"		=> "mysql:host=localhost;dbname=perekup_production",
+				"user"		=> "root",
+				"pass"		=> "nr3724fh",
 				"encoding"	=> "utf8",
 				"errmode"	=> "exception",
 				"errformat"	=> "html",
 			),
 			"production" => array(
-				"sys"		=> "mysql:host=localhost;dbname=obzor_auto",
-				"user"		=> "obzor_auto",
-				"pass"		=> "test",
+				"sys"		=> "mysql:host=localhost;dbname=perekup_production",
+				"user"		=> "root",
+				"pass"		=> "",
 				"encoding"	=> "utf8",
 				"errmode"	=> "exception",
 				"errformat"	=> "html",
 			),
 		),
-		"default_connection_id" => "production",
+		"default_connection_id" => "local",
 	),
 	"debug" => array(
 		"mode" => "SHORT|IMPORTANT|MAJOR|SQL",

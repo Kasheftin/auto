@@ -4,13 +4,13 @@ include(dirname(__FILE__) . "/c_header.php");
 
 try
 {
-	$names = array("body_type","drive","engine_type","transmission");
+	$names = array("sysname");
 
 	foreach($names as $name)
 	{
-		$rws = DB::q("select * from offers_" . $name . "s");
+		$rws = DB::q("select * from " . $name . "s");
 		foreach($rws as $rw)
-				$GLOBALS["offers_" . $name . "s"][$rw["id"]] = $rw;
+				$GLOBALS[$name . "s"][$rw["name"]] = $rw["id"];
 	}
 
 	DB::q("truncate table offers");
@@ -28,14 +28,12 @@ try
 	);
 
 	$rws = DB::q("select * from source_offers where status=1 and patterns_status=1 and mark_id>0 and model_id>0 and region_id>0 and dt_last_found>" . time() . "-86400");
-//	$rws = DB::q("select * from source_offers where id=3");
 	foreach($rws as $rw)
 	{
 		foreach($names as $name)
 		{
-			$rw[$name] = $GLOBALS["offers_" . $name . "s"][$rw[$name . "_id"]]["name"];
-			unset($rw[$name . "_id"]);
-			if (!$rw[$name]) $rw[$name] = "";
+			$rw[$name . "_id"] = $GLOBALS[$name . "s"][$rw[$name]];
+			unset($rw[$name]);
 		}
 
 		if ($rw["without_customs"]) $rw["crashed"] = 1;
@@ -51,11 +49,14 @@ try
 				$rw_insert[$i_to] = $v;
 		}
 
-		$str = "";
+		$str = $fields_str = "";
 		foreach($rw_insert as $name => $value)
+		{
 			$str .= ($str?",":"") . ":" . $name;
+			$fields_str .= ($fields_str?",":"") . "`" . $name . "`";
+		}
 
-		DB::q("insert into offers values(" . $str . ")",$rw_insert);
+		DB::q("insert into offers(" . $fields_str . ") values(" . $str . ")",$rw_insert);
 	}
 }
 catch (Exception $e)

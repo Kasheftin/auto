@@ -6,13 +6,13 @@ try
 {
 	$marks_by_name = $models_by_name = array();
 
-	$rws = DB::q("select * from offers_marks");
+	$rws = DB::q("select * from brands");
 	foreach($rws as $rw)
 		$marks_by_name[$rw["name"]] = $rw["id"];
 
-	$rws = DB::q("select * from offers_models");
+	$rws = DB::q("select * from models");
 	foreach($rws as $rw)
-		$models_by_name[$rw["mark_id"]][$rw["name"]] = $rw["id"];
+		$models_by_name[$rw["brand_id"]][$rw["name"]] = $rw["id"];
 
 	$rws = DB::q("select * from source_offers where status=1 and (mark_id=0 or model_id=0)");
 	foreach($rws as $rw)
@@ -23,12 +23,13 @@ try
 			$rw["mark_id"] = (int)$marks_by_name[$rw["mark"]];
 			if (!$rw["mark_id"])
 			{
-				$rw["mark_id"] = DB::q("insert into offers_marks(`name`) values(:name)",array("name"=>$rw["mark"]));
+				$rw["mark_id"] = DB::q("insert into brands(`name`) values(:name)",array("name"=>$rw["mark"]));
 				$marks_by_name[$rw["mark"]] = $rw["mark_id"];
 			}
 		}
 
-		$rw["model"] = trim(preg_replace("/^\s*" . $rw["mark"] . "\s*/","",$rw["markmodel"]));
+		$rw["model"] = trim(mb_substr($rw["markmodel"],mb_strlen($rw["mark"])));
+
 		if (!$rw["model"]) continue;
 		
 		if ($rw["model_id"] == 0)
@@ -36,7 +37,7 @@ try
 			$rw["model_id"] = (int)$models_by_name[$rw["mark_id"]][$rw["model"]];
 			if (!$rw["model_id"])
 			{
-				$rw["model_id"] = DB::q("insert into offers_models(`mark_id`,`name`) values(:mark_id,:name)",array("mark_id"=>$rw["mark_id"],"name"=>$rw["model"]));
+				$rw["model_id"] = DB::q("insert into models(`brand_id`,`name`) values(:mark_id,:name)",array("mark_id"=>$rw["mark_id"],"name"=>$rw["model"]));
 				$models_by_name[$rw["mark_id"]][$rw["model"]] = $rw["model_id"];
 			}
 		}
