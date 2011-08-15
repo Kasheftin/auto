@@ -40,11 +40,11 @@ abstract class parser
 			$this->initializeOfferState();
 			
 			if ($this->opts["offer_id"])
-				$rws = DB::f("select * from source_offers where id=:id and sysname=:sysname limit 0,1",array("id"=>$this->opts["offer_id"],"sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url,markmodel from source_offers where id=:id and sysname=:sysname limit 0,1",array("id"=>$this->opts["offer_id"],"sysname"=>$this->opts["sysname"]));
 			elseif ($this->opts["source_id"])
-				$rws = DB::f("select * from source_offers where source_id=:source_id and sysname=:sysname limit 0,1",array("source_id"=>$this->opts["source_id"],"sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url,markmodel from source_offers where source_id=:source_id and sysname=:sysname limit 0,1",array("source_id"=>$this->opts["source_id"],"sysname"=>$this->opts["sysname"]));
 			else
-				$rws = DB::f("select * from source_offers where status=0 and sysname=:sysname",array("sysname"=>$this->opts["sysname"]));
+				$rws = DB::f("select id,source_id,source_url,markmodel from source_offers where status=0 and sysname=:sysname",array("sysname"=>$this->opts["sysname"]));
 
 			foreach($rws as $rw)
 			{

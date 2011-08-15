@@ -1,6 +1,6 @@
 <?php
 
-ini_set("memory_limit","64M");
+ini_set("memory_limit","512M");
 error_reporting(E_ERROR);
 set_time_limit(0);
 mb_internal_encoding("UTF-8");
