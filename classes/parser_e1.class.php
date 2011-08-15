@@ -107,6 +107,8 @@ class ParserE1 extends Parser
 			$data["contacts"][$p_n] = $p_v;
 		}
 
+		$data["markmodel"] = $data["markmodel"][0];
+
 		if ($data["info"]["Таможня"] && $data["info"]["Таможня"] != "Растаможен" && $data["info"]["Таможня"] != "Не нуждается")
 			$data["without_customs"] = 1;
 		else
@@ -139,6 +141,9 @@ class ParserE1 extends Parser
 		$phone_raw = preg_replace("/[^\d]/","",$phone_raw);
 		$phone_raw = preg_replace("/^8/","",$phone_raw);
 		$data["phone"] = $phone_raw;
+
+		if (!$data["phone"] && preg_match("/^[\d-\s]+$/",$data["contact_person"]))
+			$data["phone"] = $data["contact_person"];
 
 		unset($data["contacts"]["Адрес e-mail"]);
 
